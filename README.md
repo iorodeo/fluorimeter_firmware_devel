@@ -1,16 +1,20 @@
-# Open Colorimeter Firmware 
+# fluorimeter_firmware_devel  
 
-![alt text](/images/open_colorimeter.png)
+![alt text](/images/flourimeter_prototype.png)
 
-Firmware (circuitpython) for our new stand alone colorimeter (in development). 
+Development firmware (circuitpython) for a fluorimeter based on our open colorimeter (in development). 
 
 ## Requirements 
 
-* circuitpython >= 7.32
+* circuitpython >= 7.32, < 8.0
 * adafruit_bitmap_font
 * adafruit_bus_device
+* adafruit_display_shapes
 * adafruit_display_text
+* adafruit_itertools
 * adafruit_tsl2591
+* adafruit_bh1750
+
 
 ## Installation
 
@@ -23,9 +27,10 @@ your feather development board.
 
     - adafruit_bitmap_font
     - adafruit_bus_device
-    - adafruit_display_text
     - adafruit_display_shapes
+    - adafruit_display_text
+    - adafruit_itertools
     - adafruit_tsl2591
-    - adatfruit_itertools
+    - adafruit_bh1750
   
 

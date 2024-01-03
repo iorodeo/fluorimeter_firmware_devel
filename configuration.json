@@ -1,0 +1,5 @@
+{
+  "gain" : "max",
+  "integration_time" : "600ms",
+  "startup" : "Sensor90"
+} 
