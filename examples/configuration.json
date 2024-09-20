@@ -1,5 +1,5 @@
 {
-  "gain" : "med",
-  "integration_time" : "500ms",
-  "startup" : "Absorbance"
+  "gain" : "max",
+  "integration_time" : "600ms",
+  "startup" : "Dual Sensor"
 } 

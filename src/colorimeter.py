@@ -20,7 +20,7 @@ from configuration import ConfigurationError
 
 from menu_screen import MenuScreen
 from message_screen import MessageScreen
-from measure_screen import MeasureScreen
+from measure_screen_dual_sensor import MeasureScreen
 
 from integrator import Integrator
 
@@ -30,23 +30,32 @@ class Mode:
     MESSAGE = 2
     ABORT   = 3
 
+
+
 class Colorimeter:
 
     ABOUT_STR = 'About'
-    SENSOR_90_STR = 'Sensor90' 
-    SENSOR_90_NRM_STR = 'Sensor90 Nrm.'
+    DUAL_SENSOR_STR = 'Dual Sensor' 
+    SENSOR_90_RAW_STR = 'Sensor90'
+    SENSOR_90_NRM_STR = 'Sensor90 Nrm'
     SENSOR_90_INT_STR = 'Sensor90 Int'
-    SENSOR_180_STR = 'Sensor180'
+    SENSOR_180_RAW_STR = 'Sensor180'
     SENSOR_180_NRM_STR = 'Sensor180 Nrm'
     DEFAULT_MEASUREMENTS = [
-            SENSOR_90_STR,
-            SENSOR_90_NRM_STR,
-            SENSOR_90_INT_STR,
-            SENSOR_180_STR,
-            SENSOR_180_NRM_STR,
+            DUAL_SENSOR_STR,
             ]
 
     SENSOR_180_REF_VALUE = 750.0
+
+    MEASUREMENT_NAME_TO_LABEL_NAME = {
+            'Dual Sensor'   : ('Sensor90', 'Sensor180'),
+            'Sensor90'      : 'Sensor90', 
+            'Sensor90 Nrm'  : 'Sensor90 Nrm', 
+            'Sensor90 Int'  : 'Sensor90 Int', 
+            'Sensor180'     : 'Sensor180', 
+            'Sensor180 Nrm' : 'Sensor180 Nrm', 
+            }
+
 
     def __init__(self):
 
@@ -55,6 +64,7 @@ class Colorimeter:
         self.menu_view_pos = 0
         self.menu_item_pos = 0
         self.mode = Mode.MEASURE
+        self.blanking_enabled = False
         self.is_blanked = False
         self.blank_value = self.SENSOR_180_REF_VALUE 
         self.integrator = Integrator(num=20)
@@ -165,8 +175,12 @@ class Colorimeter:
         self.menu_screen.set_curr_item(pos)
 
     @property
+    def is_dual_sensor(self):
+        return self.measurement_name == self.DUAL_SENSOR_STR
+
+    @property
     def is_sensor_90(self):
-        return self.measurement_name == self.SENSOR_90_STR
+        return self.measurement_name == self.SENSOR_90_RAW_STR
 
     @property
     def is_sensor_90_nrm(self):
@@ -178,7 +192,7 @@ class Colorimeter:
 
     @property
     def is_sensor_180(self):
-        return self.measurement_name == self.SENSOR_180_STR
+        return self.measurement_name == self.SENSOR_180_RAW_STR
 
     @property
     def is_sensor_180_nrm(self):
@@ -209,7 +223,7 @@ class Colorimeter:
 
     @property
     def sensor_180_value(self):
-        return self.light_sensor_bh1750.value
+        return int(self.light_sensor_bh1750.value)
 
     @property
     def sensor_180_nrm_value(self):
@@ -217,7 +231,9 @@ class Colorimeter:
 
     @property
     def measurement_value(self):
-        if self.is_sensor_90:
+        if self.is_dual_sensor:
+            value = self.sensor_90_value, self.sensor_180_value
+        elif self.is_sensor_90:
             value = self.sensor_90_value
         elif self.is_sensor_90_nrm:
             value = self.sensor_90_nrm_value
@@ -236,14 +252,15 @@ class Colorimeter:
         return value
 
     def blank_sensor(self, set_blanked=True):
-        blank_samples = ulab.numpy.zeros((constants.NUM_BLANK_SAMPLES,))
-        for i in range(constants.NUM_BLANK_SAMPLES):
-            value = self.sensor_180_value
-            blank_samples[i] = value
-            time.sleep(constants.BLANK_DT)
-        self.blank_value = ulab.numpy.median(blank_samples)
-        if set_blanked:
-            self.is_blanked = True
+        if self.blanking_enabled:
+            blank_samples = ulab.numpy.zeros((constants.NUM_BLANK_SAMPLES,))
+            for i in range(constants.NUM_BLANK_SAMPLES):
+                value = self.sensor_180_value
+                blank_samples[i] = value
+                time.sleep(constants.BLANK_DT)
+            self.blank_value = ulab.numpy.median(blank_samples)
+            if set_blanked:
+                self.is_blanked = True
 
     def blank_button_pressed(self, buttons):  
         if self.is_sensor_90:
@@ -264,13 +281,13 @@ class Colorimeter:
         return buttons & constants.BUTTON['right']
 
     def gain_button_pressed(self, buttons):
-        if self.is_sensor_90:
+        if self.is_sensor_90 or self.is_dual_sensor:
             return buttons & constants.BUTTON['gain']
         else:
             return False
 
     def itime_button_pressed(self, buttons):
-        if self.is_sensor_90:
+        if self.is_sensor_90 or self.is_dual_sensor:
             return buttons & constants.BUTTON['itime']
         else:
             return False
@@ -291,8 +308,9 @@ class Colorimeter:
         # This is different for each operating mode. 
         if self.mode == Mode.MEASURE:
             if self.blank_button_pressed(buttons):
-                self.measure_screen.set_blanking()
-                self.blank_sensor()
+                if self.blanking_enabled:
+                    self.measure_screen.set_blanking()
+                    self.blank_sensor()
             elif self.menu_button_pressed(buttons):
                 self.mode = Mode.MENU
                 self.menu_view_pos = 0
@@ -325,13 +343,7 @@ class Colorimeter:
             self.update_menu_screen()
 
         elif self.mode == Mode.MESSAGE:
-            if self.calibrations.has_errors:
-                error_msg = self.calibrations.pop_error()
-                self.message_screen.set_message(error_msg)
-                self.message_screen.set_to_error()
-                self.mode = Mode.MESSAGE
-            else:
-                self.mode = Mode.MEASURE
+            self.mode = Mode.MEASURE
 
     def check_debounce(self):
         button_dt = time.monotonic() - self.last_button_press
@@ -353,7 +365,7 @@ class Colorimeter:
                 # Get measurement and result to measurment screen
                 try:
                     self.measure_screen.set_measurement(
-                            self.measurement_name, 
+                            self.MEASUREMENT_NAME_TO_LABEL_NAME[self.measurement_name], 
                             self.measurement_units, 
                             self.measurement_value
                             )
@@ -362,14 +374,14 @@ class Colorimeter:
 
                 # Display whether or not we have blanking data. Not relevant
                 # when device is displaying raw sensor data
-                if self.is_sensor_90:
+                if self.is_sensor_90 or self.is_dual_sensor:
                     self.measure_screen.set_blanked()
                     gain = self.light_sensor_tsl2591.gain
                     itime = self.light_sensor_tsl2591.integration_time
                     self.measure_screen.set_gain(gain)
                     self.measure_screen.set_integration_time(itime)
                 else:
-                    if self.is_blanked:
+                    if self.is_blanked or not self.blanking_enabled:
                         self.measure_screen.set_blanked()
                     else:
                         self.measure_screen.set_not_blanked()
