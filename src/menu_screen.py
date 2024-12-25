@@ -100,4 +100,4 @@ class MenuScreen:
                 item_label.background_color = constants.COLOR_TO_RGB['black']
 
     def show(self):
-        board.DISPLAY.show(self.group)
+        board.DISPLAY.root_group = self.group

@@ -197,5 +197,5 @@ class MeasureScreen:
         self.bat_label.text = f'battery {value:1.1f}V'
 
     def show(self):
-        board.DISPLAY.show(self.group)
+        board.DISPLAY.root_group = self.group
 

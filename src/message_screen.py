@@ -95,5 +95,5 @@ class MessageScreen:
         self.header_label.text = 'About'
 
     def show(self):
-        board.DISPLAY.show(self.group)
+        board.DISPLAY.root_group = self.group
 

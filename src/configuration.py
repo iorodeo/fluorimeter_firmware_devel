@@ -19,56 +19,76 @@ class Configuration(JsonSettingsFile):
 
     def check(self):
 
-        # Check gain
-        try:
-            gain_str = self.data['gain']
-        except KeyError:
-            error_msg = f'{self.FILE_TYPE} missing gain'
-            error_dict['gain'] = error_msg
-        else:
-            try:
-                gain = constants.STR_TO_GAIN[gain_str]
-            except KeyError:
-                error_msg = f'{self.FILE_TYPE} unknown gain {gain_str}'
-                error_dict['gain'] = error_msg
+        for sensor_name in ('sensor_90', 'sensor_180'):
 
-        # Check integration time
-        try:
-            itime_str = self.data['integration_time']
-        except KeyError:
-            error_msg = f'{self.FILE_TYPE} missing integration time'
-            error_dict['integration_time'] = error_msg
-        else:
+            if sensor_name in self.data:
+                # Check Gain
+                gain_key = f'gain_{sensor_name}'
+                try:
+                    gain_str = self.data[gain_key]
+                except KeyError:
+                    error_msg = f'{self.FILE_TYPE} missing gain'
+                    error_dict[gain_key] = error_msg
+                else:
+                    try:
+                        gain = constants.STR_TO_GAIN[gain_str]
+                    except KeyError:
+                        error_msg = f'{self.FILE_TYPE} unknown gain {gain_str}'
+                        error_dict[gain_key] = error_msg
 
-            try:
-                itime = constants.STR_TO_INTEGRATION_TIME[itime_str]
-            except KeyError:
-                error_msg = f'{self.FILE_TYPE} unknown integration time {itime_str}'
-                error_dict['integration_time'] = error_msg
+                # Check integration time
+                itime_key = f'itime_{sensor_name}'
+                try:
+                    itime_str = self.data[itime_key]
+                except KeyError:
+                    error_msg = f'{self.FILE_TYPE} missing integration time'
+                    error_dict[item_key] = error_msg
+                else:
+                    try:
+                        itime = constants.STR_TO_INTEGRATION_TIME[itime_str]
+                    except KeyError:
+                        error_msg = f'{self.FILE_TYPE} unknown integration time {itime_str}'
+                        error_dict[itime_key] = error_msg
 
         # Remove configurations with errors
         for name in self.error_dict:
             del self.data[name]
 
-    @property
-    def integration_time(self):
+    def itime(self, sensor_name):
+        itime_key = f'itime_{sensor_name}'
         try:
-            itime_str = self.data['integration_time']
+            itime_str = self.data[itime_key]
         except KeyError:
             itime = None
         else:
             itime = constants.STR_TO_INTEGRATION_TIME[itime_str]
         return itime
 
-    @property
-    def gain(self):
+    def gain(self, sensor_name):
+        gain_key = f'gain_{sensor_name}'
         try:
-            gain_str = self.data['gain']
+            gain_str = self.data[gain_key]
         except KeyError:
             gain = None
         else:
             gain = constants.STR_TO_GAIN[gain_str]
         return gain
+
+    @property
+    def itime_sensor_90(self):
+        return self.itime('sensor_90')
+
+    @property
+    def itime_sensor_180(self):
+        return self.itime('sensor_180')
+
+    @property
+    def gain_sensor_90(self):
+        return self.gain('sensor_90')
+
+    @property
+    def gain_sensor_180(self):
+        return self.gain('sensor_180')
 
     @property
     def startup(self):

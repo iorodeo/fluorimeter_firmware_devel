@@ -1,12 +1,5 @@
 import adafruit_tsl2591
-import adafruit_bh1750
 
-
-class LightSensorOverflow(Exception):
-    pass
-
-class LightSensorIOError(Exception):
-    pass
 
 class LightSensorTSL2591:
 
@@ -15,6 +8,16 @@ class LightSensorTSL2591:
 
     DEFAULT_GAIN = adafruit_tsl2591.GAIN_MED
     DEFAULT_INTEGRATION_TIME = adafruit_tsl2591.INTEGRATIONTIME_500MS
+
+    GAIN_TO_AGAIN = { 
+            adafruit_tsl2591.GAIN_LOW  :  1.0, 
+            adafruit_tsl2591.GAIN_MED  :  24.5,  
+            adafruit_tsl2591.GAIN_HIGH :  400.0, 
+            adafruit_tsl2591.GAIN_MAX  :  9200,
+            }
+
+    # Irradiance conversion coefficient gives (uW/cm^2) per count with atime=1ms and gain=1x
+    IRRADIANCE_COEFF = 100.0*GAIN_TO_AGAIN[adafruit_tsl2591.GAIN_HIGH]/264.1
 
     def __init__(self, i2c):
 
@@ -51,8 +54,25 @@ class LightSensorTSL2591:
         return values
 
     @property
+    def lux(self):
+        return self._device.lux
+
+    @property
+    def irradiance(self):
+        raw_value = self._device.raw_luminosity[0]/(self.again*self.atime)
+        return raw_value*self.IRRADIANCE_COEFF
+
+    @property
     def gain(self):
         return self._gain
+
+    @property
+    def again(self):
+        return self.GAIN_TO_AGAIN[self._gain]
+
+    @property
+    def atime(self):
+        return 100.0*self._integration_time + 100.0
 
     @gain.setter
     def gain(self, value):
@@ -69,16 +89,10 @@ class LightSensorTSL2591:
         self._device.integration_time = value
 
 
+class LightSensorOverflow(Exception):
+    pass
 
-class LightSensorBH1750:
+class LightSensorIOError(Exception):
+    pass
 
-    def __init__(self,i2c):
-        try:
-            self._device = adafruit_bh1750.BH1750(i2c)
-        except ValueError as error:
-            raise LightSensorIOError(error)
-
-    @property
-    def value(self):
-        return self._device.lux
 

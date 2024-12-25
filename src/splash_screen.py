@@ -15,4 +15,4 @@ class SplashScreen:
         self.group.append(self.tile_grid)
 
     def show(self):
-        board.DISPLAY.show(self.group)
+        board.DISPLAY.root_group = self.group
