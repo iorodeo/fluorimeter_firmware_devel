@@ -1,5 +1,7 @@
 import constants
 from count_measurement_screen import CountMeasurementScreen
+from irradiance_measurement_screen import IrradianceMeasurementScreen
+from light_sensor import LightSensorOverflow
 
 class Measurement:
 
@@ -56,7 +58,7 @@ class RawCount(Measurement):
 class Irradiance(Measurement):
 
     NAME  = f'Irradiance'
-    LABEL = f'{NAME} @90', '{NAME} @180' 
+    LABEL = f'{NAME} @90', f'{NAME} @180' 
     UNITS = f'{constants.MU}W/{constants.CM2}'
 
     @property
@@ -66,10 +68,13 @@ class Irradiance(Measurement):
         except LightSensorOverflow:
             value_90 = constants.OVERFLOW_STR
         try:
-            value180 = self.sensor_180.irradiance
+            value_180 = self.sensor_180.irradiance
         except LightSensorOverflow:
             value_180 = constants.OVERFLOW_STR
         return value_90, value_180
+
+    def create_screen(self): 
+        return IrradianceMeasurementScreen()
 
 class RelativeUnit(Measurement):
 

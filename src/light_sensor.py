@@ -24,7 +24,7 @@ class LightSensorTSL2591:
         # Set up light sensor
         try:
             self._device = adafruit_tsl2591.TSL2591(i2c)
-        except ValueError as error:
+        except (ValueError, OSError) as error:
             raise LightSensorIOError(error)
         self.gain = self.DEFAULT_GAIN 
         self.integration_time = self.DEFAULT_INTEGRATION_TIME 

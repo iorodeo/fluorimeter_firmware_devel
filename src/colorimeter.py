@@ -12,8 +12,8 @@ import adafruit_tca9548a
 
 import measurement
 from light_sensor import LightSensorTSL2591
-from light_sensor import LightSensorOverflow
 from light_sensor import LightSensorIOError
+
 from battery_monitor import BatteryMonitor
 from configuration import Configuration
 from configuration import ConfigurationError
@@ -32,6 +32,7 @@ class Colorimeter:
 
     DEFAULT_MEASUREMENTS = [
             measurement.RawCount.NAME,
+            measurement.Irradiance.NAME,
             ]
             
     def __init__(self):
@@ -215,17 +216,18 @@ class Colorimeter:
             self.menu_item_pos = 0
             self.update_menu_screen()
         elif event.key_number == constants.BUTTON['gain']: 
-            if self.measurement_screen.selected_sensor == 'Sensor90':
+            if self.measurement_screen.selected_sensor == 0:
                 self.light_sensor_90.gain = next(self.gain_cycle_sensor_90)
-            if self.measurement_screen.selected_sensor == 'Sensor180':
+            if self.measurement_screen.selected_sensor == 1:
                 self.light_sensor_180.gain = next(self.gain_cycle_sensor_180)
         elif event.key_number == constants.BUTTON['itime']: 
-            if self.measurement_screen.selected_sensor == 'Sensor90':
+            if self.measurement_screen.selected_sensor == 0:
                 self.light_sensor_90.integration_time = next(self.itime_cycle_sensor_90)
-            if self.measurement_screen.selected_sensor == 'Sensor180':
+            if self.measurement_screen.selected_sensor == 1:
                 self.light_sensor_180.integration_time = next(self.itime_cycle_sensor_180)
         elif event.key_number == constants.BUTTON['right']:
-            self.measurement_screen.selected_sensor_next()
+            if self.measurement_screen.has_selected_sensor:
+                self.measurement_screen.selected_sensor_next()
 
     def on_menu_mode_button(self, event): 
         if event is None or event.pressed:
@@ -261,29 +263,7 @@ class Colorimeter:
 
             # Update display based on the current operating mode
             if self.mode == Mode.MEASURE:
-                # Get measurement and result to measurment screen
-                self.measurement_screen.set_measurement( 
-                        self.measurement.label, 
-                        self.measurement.units, 
-                        self.measurement.value,
-                        )
-
-                # Display whether or not we have blanking data. Not relevant
-                # when device is displaying raw sensor data
-                if isinstance(self.measurement, measurement.RawCount):
-                    self.measurement_screen.set_gain((
-                        self.light_sensor_90.gain, 
-                        self.light_sensor_180.gain
-                        ))
-                    self.measurement_screen.set_integration_time((
-                        self.light_sensor_90.integration_time,
-                        self.light_sensor_180.integration_time
-                        ))
-
-                # Update and display measurement of battery voltage
-                self.battery_monitor.update()
-                battery_voltage = self.battery_monitor.voltage_lowpass
-                self.measurement_screen.set_bat(battery_voltage)
+                self.measurement_screen.update(self.measurement, self.battery_monitor)
                 self.measurement_screen.show()
 
             elif self.mode == Mode.MENU:
@@ -292,6 +272,7 @@ class Colorimeter:
             elif self.mode in (Mode.MESSAGE, Mode.ABORT):
                 self.message_screen.show()
 
+            self.battery_monitor.update()
             time.sleep(constants.LOOP_DT)
             gc.collect()
 
