@@ -1,6 +1,8 @@
+from ulab import numpy as np
 import constants
 from count_measurement_screen import CountMeasurementScreen
 from irradiance_measurement_screen import IrradianceMeasurementScreen
+from reference_unit_screen import ReferenceUnitScreen
 from light_sensor import LightSensorOverflow
 
 class Measurement:
@@ -33,6 +35,9 @@ class Measurement:
     def create_screen(self):
         return None
 
+    def update_norm_sample(self):
+        pass
+
 
 class RawCount(Measurement):
     
@@ -59,7 +64,7 @@ class Irradiance(Measurement):
 
     NAME  = f'Irradiance'
     LABEL = f'{NAME} @90', f'{NAME} @180' 
-    UNITS = f'{constants.MU}W/{constants.CM2}'
+    UNITS = f'{constants.MU_STR}W/{constants.CM2_STR}'
 
     @property
     def value(self):
@@ -76,15 +81,44 @@ class Irradiance(Measurement):
     def create_screen(self): 
         return IrradianceMeasurementScreen()
 
+
 class RelativeUnit(Measurement):
 
-    NAME  = f'Relative Unit'
+    NAME  = f'Relative Units'
     LABEL = f'{NAME} @90'
-    UNITS = f'{constants.MU}W/{constants.CM2}'
+    UNITS = f'{constants.MU_STR}W/{constants.CM2_STR}'
+
+    def __init__(self, sensor_90, sensor_180):
+        super().__init__(sensor_90, sensor_180)
+        self.norm_sample_180 = None 
 
     @property
     def value(self):
-        return 0.0
+        if self.norm_sample_180 is not None:
+            value_90 = self.sensor_90.irradiance
+            ref_value_90 = constants.REF_IRRADIANCE_180*(value_90/self.norm_sample_180)
+        else:
+            ref_value_90 = '___.__'
+        return ref_value_90
+
+    def create_screen(self):
+        return ReferenceUnitScreen()
+
+    def update_norm_sample(self):
+        samples = np.zeros(constants.NUM_SAMPLE_180)
+        for i in range(constants.NUM_SAMPLE_180):
+            samples[i] = self.sensor_180.irradiance
+        median_sample = np.median(samples)
+        if median_sample > 0.0:
+            self.norm_sample_180 = np.median(samples)
+        else:
+            self.norm_sample_180 = None 
+            raise ZeroNormalizationSample("normalization sample is 0")
+
+
+class ZeroNormalizationSample(Exception):
+    pass
+
 
 MEASUREMENTS = [RawCount, Irradiance, RelativeUnit]
 NAME_TO_MEASUREMENT = {item.NAME:item for item in MEASUREMENTS}

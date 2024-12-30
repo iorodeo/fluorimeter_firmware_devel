@@ -14,13 +14,17 @@ DEBOUNCE_DT = 0.6
 NUM_BLANK_SAMPLES = 50 
 BATTERY_AIN_PIN = board.A6
 
+REF_IRRADIANCE_180 = 500.0
+NUM_SAMPLE_180 = 10
+
+
 BUTTON = { 
         'left'  : 7,
         'up'    : 6, 
         'down'  : 5, 
         'right' : 4, 
         'menu'  : 3, 
-        'blank' : 2, 
+        'norm'  : 2, 
         'itime' : 1, 
         'gain'  : 0, 
         }
@@ -56,6 +60,5 @@ INTEGRATION_TIME_TO_STR = {v:k for k,v in STR_TO_INTEGRATION_TIME.items()}
 
 OVERFLOW_STR = 'OVFL'
 ABOUT_STR = 'About'
-
-MU = '\u03BC'
-CM2 = 'cm\u00B2'
+MU_STR = '\u03BC'
+CM2_STR = 'cm\u00B2'

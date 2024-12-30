@@ -1,6 +1,5 @@
 import gc
 import time
-import ulab
 import busio
 import board
 import analogio
@@ -19,7 +18,6 @@ from configuration import Configuration
 from configuration import ConfigurationError
 from menu_screen import MenuScreen
 from message_screen import MessageScreen
-from integrator import Integrator
 
 class Mode:
     MEASURE = 0
@@ -33,6 +31,7 @@ class Colorimeter:
     DEFAULT_MEASUREMENTS = [
             measurement.RawCount.NAME,
             measurement.Irradiance.NAME,
+            measurement.RelativeUnit.NAME,
             ]
             
     def __init__(self):
@@ -109,13 +108,14 @@ class Colorimeter:
                 self.message_screen.set_message(error_msg)
                 self.message_screen.set_to_error()
             measurement_name = self.menu_items[0] 
-        self.measurement = measurement.from_name(measurement_name, self.light_sensors)
+        self.menu_item_pos = self.menu_items.index(measurement_name)
+        self.mode = Mode.MEASURE
+
             
         # Setup up battery monitoring settings cycles 
         self.battery_monitor = BatteryMonitor()
         self.setup_gain_and_itime_cycles()
 
-        self.mode = Mode.MEASURE
 
     def setup_gain_and_itime_cycles(self):
         self.gain_cycle_sensor_90 = adafruit_itertools.cycle(constants.GAIN_TO_STR) 
@@ -167,6 +167,7 @@ class Colorimeter:
         self.measurement_screen = None 
         self.message_screen = None 
         self.menu_screen = None 
+        gc.collect()
     
 
     @property
@@ -228,6 +229,8 @@ class Colorimeter:
         elif event.key_number == constants.BUTTON['right']:
             if self.measurement_screen.has_selected_sensor:
                 self.measurement_screen.selected_sensor_next()
+        elif event.key_number == constants.BUTTON['norm']:
+            self.measurement.update_norm_sample()
 
     def on_menu_mode_button(self, event): 
         if event is None or event.pressed:
