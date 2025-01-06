@@ -4,16 +4,17 @@
 
 Development firmware (circuitpython) for a fluorimeter based on our open colorimeter (in development). 
 
-## Requirements 
+## Requirements (see requirements.txt)
 
-* circuitpython >= 7.32, < 8.0
-* adafruit_bitmap_font
-* adafruit_bus_device
-* adafruit_display_shapes
-* adafruit_display_text
-* adafruit_itertools
-* adafruit_tsl2591
-* adafruit_bh1750
+* circuitpython = 9.1.1
+* adafruit_tsl2591==1.3.13
+* adafruit_ticks==1.1.1
+* adafruit_tca9548a==0.7.4
+* adafruit_bus_device==5.2.10
+* adafruit_itertools==2.1.2
+* adafruit_bitmap_font==2.1.3
+* adafruit_display_text==3.2.0
+* adafruit_display_shapes==2.10.0
 
 
 ## Installation
@@ -23,14 +24,13 @@ your feather development board.
 
 * Copy assets folder to the CIRCUITPY drive
 
-* Copy the following libraries from the circuitpython bundle to CIRCUITPY/lib
+* Copy the required libraries from the circuitpython bundle to CIRCUITPY/lib. Note, this can be done 
+most easily using the [circup](https://github.com/adafruit/circup) tool. 
 
-    - adafruit_bitmap_font
-    - adafruit_bus_device
-    - adafruit_display_shapes
-    - adafruit_display_text
-    - adafruit_itertools
-    - adafruit_tsl2591
-    - adafruit_bh1750
+```bash
+circup install -r requirements.txt
+
+```
+
   
 
