@@ -152,7 +152,11 @@ class Colorimeter:
         self.delete_screens()
         if new_mode == Mode.MEASURE:
             measurement_name = self.menu_items[self.menu_item_pos]
-            self.measurement = measurement.from_name(measurement_name, self.light_sensors)
+            self.measurement = measurement.from_name(
+                    measurement_name, 
+                    self.light_sensors,
+                    self.configuration,
+                    )
             self.measurement_screen = self.measurement.create_screen()
         elif new_mode in (Mode.MESSAGE, Mode.ABORT):
             self.message_screen = MessageScreen()

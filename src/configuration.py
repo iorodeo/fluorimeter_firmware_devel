@@ -50,6 +50,18 @@ class Configuration(JsonSettingsFile):
                         error_msg = f'{self.FILE_TYPE} unknown integration time {itime_str}'
                         error_dict[itime_key] = error_msg
 
+        # Check for reference irradiance value
+        ref_key = 'ref_irradiance_180'
+        if ref_key in self.data:
+            try:
+                ref_value = float(self.data[ref_key])
+            except ValueError:
+                error_msg = f'unable to convert {ref_key} to float'
+                error_dict[ref_key] = error_msg
+        else:
+            self.data['ref_irradiance_180'] = constants.DEFAULT_REF_IRRADIANCE_180
+
+
         # Remove configurations with errors
         for name in self.error_dict:
             del self.data[name]
@@ -93,6 +105,10 @@ class Configuration(JsonSettingsFile):
     @property
     def startup(self):
         return self.data.get('startup', None)
+
+    @property
+    def ref_irradiance_180(self):
+        return float(self.data['ref_irradiance_180'])
 
 
 

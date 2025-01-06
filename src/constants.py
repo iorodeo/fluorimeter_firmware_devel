@@ -14,9 +14,8 @@ DEBOUNCE_DT = 0.6
 NUM_BLANK_SAMPLES = 50 
 BATTERY_AIN_PIN = board.A6
 
-REF_IRRADIANCE_180 = 500.0
+DEFAULT_REF_IRRADIANCE_180 = 1000.0
 NUM_SAMPLE_180 = 10
-
 
 BUTTON = { 
         'left'  : 7,
@@ -28,7 +27,6 @@ BUTTON = {
         'itime' : 1, 
         'gain'  : 0, 
         }
-
 
 COLOR_TO_RGB = collections.OrderedDict([ 
     ('black'  , 0x000000), 

@@ -11,9 +11,10 @@ class Measurement:
     LABEL = 'Label'
     UNITS = None
 
-    def __init__(self, sensor_90, sensor_180):
+    def __init__(self, sensor_90, sensor_180, config):
         self.sensor_90  = sensor_90
         self.sensor_180 = sensor_180
+        self.config = config
 
     @property
     def name(self):
@@ -88,15 +89,16 @@ class RelativeUnit(Measurement):
     LABEL = f'{NAME} @90'
     UNITS = f'{constants.MU_STR}W/{constants.CM2_STR}'
 
-    def __init__(self, sensor_90, sensor_180):
-        super().__init__(sensor_90, sensor_180)
+    def __init__(self, sensor_90, sensor_180, config):
+        super().__init__(sensor_90, sensor_180, config)
         self.norm_sample_180 = None 
+        self.ref_irradiance_180 = config.ref_irradiance_180
 
     @property
     def value(self):
         if self.norm_sample_180 is not None:
             value_90 = self.sensor_90.irradiance
-            ref_value_90 = constants.REF_IRRADIANCE_180*(value_90/self.norm_sample_180)
+            ref_value_90 = self.ref_irradiance_180*(value_90/self.norm_sample_180)
         else:
             ref_value_90 = '___.__'
         return ref_value_90
@@ -123,5 +125,5 @@ class ZeroNormalizationSample(Exception):
 MEASUREMENTS = [RawCount, Irradiance, RelativeUnit]
 NAME_TO_MEASUREMENT = {item.NAME:item for item in MEASUREMENTS}
 
-def from_name(name, sensors):
-    return NAME_TO_MEASUREMENT[name](*sensors)
+def from_name(name, sensors, config):
+    return NAME_TO_MEASUREMENT[name](*sensors, config)
