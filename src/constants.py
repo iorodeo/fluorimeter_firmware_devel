@@ -4,7 +4,6 @@ import adafruit_tsl2591
 
 __version__ = '0.1.0f'
 
-CALIBRATIONS_FILE = 'calibrations.json'
 CONFIGURATION_FILE = 'configuration.json'
 SPLASHSCREEN_BMP = 'assets/splashscreen.bmp'
 
