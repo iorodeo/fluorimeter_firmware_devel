@@ -1,4 +1,4 @@
-# fluorimeter_firmware_devel  
+# open_colorimeter_plus_firmware  
 
 ![alt text](/images/flourimeter_prototype.png)
 
