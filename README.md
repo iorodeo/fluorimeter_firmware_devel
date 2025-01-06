@@ -2,7 +2,7 @@
 
 ![alt text](/images/flourimeter_prototype.png)
 
-Development firmware (circuitpython) for a fluorimeter based on our open colorimeter (in development). 
+Firmware (circuitpython) for IO Rodeo's open colorimeter plus fluorimeter. 
 
 ## Requirements (see requirements.txt)
 
