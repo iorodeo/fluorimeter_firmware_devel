@@ -2,8 +2,9 @@ import board
 import collections
 import adafruit_tsl2591
 
-__version__ = '0.1.0f'
+__version__ = '0.1.0'
 
+CALIBRATIONS_FILE = 'calibrations.json'
 CONFIGURATION_FILE = 'configuration.json'
 SPLASHSCREEN_BMP = 'assets/splashscreen.bmp'
 
