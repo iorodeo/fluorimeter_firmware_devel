@@ -221,18 +221,21 @@ class Colorimeter:
             self.menu_item_pos = 0
             self.update_menu_screen()
         elif event.key_number == constants.BUTTON['gain']: 
-            if self.measurement_screen.selected_sensor == 0:
-                self.light_sensor_90.gain = next(self.gain_cycle_sensor_90)
-            if self.measurement_screen.selected_sensor == 1:
-                self.light_sensor_180.gain = next(self.gain_cycle_sensor_180)
+            if self.measurement_screen.has_selected_sensor:
+                if self.measurement_screen.selected_sensor == 0:
+                    self.light_sensor_90.gain = next(self.gain_cycle_sensor_90)
+                if self.measurement_screen.selected_sensor == 1:
+                    self.light_sensor_180.gain = next(self.gain_cycle_sensor_180)
         elif event.key_number == constants.BUTTON['itime']: 
-            if self.measurement_screen.selected_sensor == 0:
-                self.light_sensor_90.integration_time = next(self.itime_cycle_sensor_90)
-            if self.measurement_screen.selected_sensor == 1:
-                self.light_sensor_180.integration_time = next(self.itime_cycle_sensor_180)
+            if self.measurement_screen.has_selected_sensor:
+                if self.measurement_screen.selected_sensor == 0:
+                    self.light_sensor_90.integration_time = next(self.itime_cycle_sensor_90)
+                if self.measurement_screen.selected_sensor == 1:
+                    self.light_sensor_180.integration_time = next(self.itime_cycle_sensor_180)
         elif event.key_number == constants.BUTTON['right']:
             if self.measurement_screen.has_selected_sensor:
-                self.measurement_screen.selected_sensor_next()
+                if self.measurement_screen.has_selected_sensor:
+                    self.measurement_screen.selected_sensor_next()
         elif event.key_number == constants.BUTTON['norm']:
             self.measurement.update_norm_sample()
 
